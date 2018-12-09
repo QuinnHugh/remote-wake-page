@@ -56,15 +56,33 @@ func webResponse(w http.ResponseWriter, r *http.Request)  {
 	if !statue{
 		fmt.Fprintf(w,"失败")
 		return	
-	}
-	fmt.Fprintf(w,"成功!")
-	
+	} else {
+		fmt.Fprintf(w,"成功!")
+		return
+	}	
+}
 
-	
+func submitResponse(w http.ResponseWriter, r *http.Request){
+	r.ParseForm()  //解析参数，默认是不会解析的
+	fmt.Println(r.Form)  //这些信息是输出到服务器端的打印信息
+	wolpara := r.URL.Path
+	fmt.Println("path", wolpara)
+	//fmt.Println("scheme", r.URL.Scheme)
+	//fmt.Println(r.Form["url_long"])
+	// statue := wol(wolpara)
+	// if !statue{
+	// 	fmt.Fprintf(w,"失败")
+	// 	return	
+	// }
+	// else{
+	// 	fmt.Fprintf(w,"成功!")
+	// 	return
+	// }
 }
 
 func main() {
-    http.HandleFunc("/",webResponse)
+	http.HandleFunc("/",webResponse)
+	http.HandleFunc("/da1e3053f72d38d8",submitResponse)
 
     err := http.ListenAndServe(":9000",nil)
     if err != nil{
