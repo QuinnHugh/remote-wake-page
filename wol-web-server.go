@@ -5,6 +5,8 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"database/sql"
+    _ "github.com/lib/pq"
 )
 
 func sender(conn net.Conn , macaddr string) bool {
@@ -13,18 +15,25 @@ func sender(conn net.Conn , macaddr string) bool {
 	return true
 }
 
-
+func sqlrequest(magicword string) string{
+	var macaddr string
+	connStr := "user=username password=password dbname=database"
+	db, _ := sql.Open("postgres", connStr)
+	rows, _ := db.Query("SELECT macaddr FROM woltab WHERE magic_word=$1",magicword)
+	for rows.Next() {
+        var macaddr string
+        rows.Scan(&macaddr)
+	 }
+	 return macaddr
+}
 
 func wol(magicword string) bool {
 	var macaddr string
 	statue := false
-	switch magicword {
-	case "open kun": macaddr = "0c9d92bd7d15"
-	case "chengxiang": macaddr = "0c9d92bdfa36"
-	default : return statue
-		
+	macaddr = sqlrequest(magicword)
+	if macaddr != ""{
+		return statue
 	}
-	
 	server := "yumn.tk:777"
 	//server := "127.0.0.1:8001"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
