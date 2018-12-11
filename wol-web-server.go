@@ -19,8 +19,8 @@ func wol(magicword string) bool {
 	var macaddr string
 	statue := false
 	switch magicword {
-	case "open kun": macaddr = "0c9d92bd7d15"
-	case "chengxiang": macaddr = "0c9d92bdfa36"
+	case "word1": macaddr = "macaddr1"
+	case "word2": macaddr = "macaddr2"
 	default : return statue
 		
 	}
