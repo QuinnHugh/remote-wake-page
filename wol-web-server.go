@@ -9,47 +9,50 @@ import (
     _ "github.com/lib/pq"
 )
 
-func sender(conn net.Conn , macaddr string) bool {
+func sender(conn net.Conn , macaddr string) int {
 	conn.Write([]byte(macaddr))
 	fmt.Println("send over",macaddr)
-	return true
+	return 0
 }
 
 func sqlrequest(magicword string) string{
 	var macaddr string
-	connStr := "user=username password=password dbname=database"
+	connStr := "user=username password=password dbname=databasename"
+	
 	db, _ := sql.Open("postgres", connStr)
+	err := db.Ping()
+    if err != nil {
+        return macaddr
+	}
 	rows, _ := db.Query("SELECT macaddr FROM woltab WHERE magic_word=$1",magicword)
 	for rows.Next() {
-        var macaddr string
-        rows.Scan(&macaddr)
+		rows.Scan(&macaddr)
 	 }
 	 return macaddr
 }
 
-func wol(magicword string) bool {
+func wol(magicword string) int {
 	var macaddr string
-	statue := false
 	macaddr = sqlrequest(magicword)
-	if macaddr != ""{
-		return statue
+	if macaddr == ""{
+		return -1
 	}
 	server := "yumn.tk:777"
 	//server := "127.0.0.1:8001"
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", server)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
-		statue = false
+		return -2
 	}
 
 	conn, err := net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
-		statue = false
+		return -2
 	}
 
 	fmt.Println("connect success")
-	statue = sender(conn , macaddr)
+	statue := sender(conn , macaddr)
 	return statue
 }
 
@@ -73,7 +76,7 @@ func wol(magicword string) bool {
 // }
 
 func submitResponse(w http.ResponseWriter, r *http.Request){
-	statue := false
+	var statue int
 	fmt.Fprintf(w,"Parsing the form data...\n")
 	r.ParseForm()  //解析参数，默认是不会解析的
 	//fmt.Println(w, r.Form)  //这些信息是输出到服务器端的打印信息
@@ -86,8 +89,8 @@ func submitResponse(w http.ResponseWriter, r *http.Request){
 	}else{
 		fmt.Fprintf(w,"Type in your magic word please\n")
 	}
-	if !statue{
-		fmt.Fprintf(w,"Failed!\n")
+	if statue != 0 {
+		fmt.Fprintf(w,"Failed! ERROR CODE:%d\n",statue)
 		return	
 	}else{
 		fmt.Fprintf(w,"Succeed!\n")
